@@ -1,0 +1,8 @@
+**/.ipynb_checkpoints
+.ipynb_checkpoints
+*.egg-info
+_local*
+.vscode
+**/__pycache__/
+iwai
+test_env
