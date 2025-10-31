@@ -1,6 +1,9 @@
 # AIF-Pointing
 
 Repository accompanying the paper ["An Active Inference Model of Mouse Point-and-Click Behaviour"](https://arxiv.org/abs/2510.14611) presented at the 6th International Workshop on Active Inference.
+Run simulations of mouse point and click with a continuous Active Inference agent!
+
+![Animated mouse cursor trajectory.](anim_cursor.gif) ![Animated button displacement trajectory.](anim_finger.gif)
 
 ## Installation
 

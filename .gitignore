@@ -6,3 +6,5 @@ _local*
 **/__pycache__/
 iwai
 test_env
+data/plots/*
+data/sim_data/*
