@@ -44,7 +44,7 @@ Run simulations of mouse point and click with a continuous Active Inference agen
 
 - **`run_simulation.py`**: Contains the mouse pointing environment implementation. Defines the Active Inference agent and runs simulations. Uses the AIF agent from [difai-base](https://github.com/mkl4r/difai-base) (our package for general Active Inference agents). Results are saved to `data/sim_data/`
 - **`plotting.py`**: Plotting utilities and visualization routines
-- **`create_plots.ipynb`**: Jupyter notebook for generating plots similar to those in the paper
+- **`create_plots.ipynb`**: Jupyter notebook for generating plots similar to those in the paper (update "run_name", default: day of running the simulation in YYYYMMDD). Plots are saved to `data/plots/`
 - **`pyscript_data.py`**: Data loading utilities for user experiment data from `data/user_data/`
 
 ### Data Structure
@@ -71,8 +71,6 @@ jupyter notebook create_plots.ipynb
 
 This notebook creates plots similar to those presented in the paper.
 
-### Loading User Data
-Use `pyscript_data.py` to load and process real user experiment data from the `data/user_data/` directory.
 
 ## Troubleshooting
 

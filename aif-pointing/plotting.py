@@ -16,7 +16,7 @@ def move_legend_out(ax, fontsize=12, order=None):
     ax.legend(handles=handles_new, labels=labels_new, loc='center left', bbox_to_anchor=(1, 0.5), fontsize=fontsize)
     
 
-def plot_results(dt, xx, oo, bb, aa, aa_applied, lll, llr, NEFE_PLAN=[], PRAGMATIC_PLAN=[], INFO_GAIN_PLAN=[], NEFES=[], PRAGMATICS=[], INFO_GAINS=[], 
+def plot_results(dt, xx, oo, bb, aa, aa_applied, lll, NEFE_PLAN=[], PRAGMATIC_PLAN=[], INFO_GAIN_PLAN=[], NEFES=[], PRAGMATICS=[], INFO_GAINS=[], 
                  buttons=[(0.1,0.02)], bb_sys=[], bb_noise=[], bb_after_rt=[], reaction_time_steps=None, belief_button=False, click_state=False, additional_obs=False, exp_normal_sys_params=False,
                  obs_missclick=False, button_switch_state=False, switch_on_click=False, cur_button=0, diff_control=False, 
                  plot_axes=['pos', 'vel', 'finger', 'button', 'click_state', 'acc_applied', 'button_nr', 'target_position', 'target_radius', 'target_position_change', 'target_radius_change', 'missclick', 'acc', 'click', 'loss', 'nefe', 'nefe_comp', 'bb_sys', 'bb_noise'],
@@ -90,8 +90,6 @@ def plot_results(dt, xx, oo, bb, aa, aa_applied, lll, llr, NEFE_PLAN=[], PRAGMAT
         rows.append(['loss', 'lr'])
     elif 'loss' in plot_axes and len(lll) > 0:
         rows.append(['loss', 'loss'])
-    elif 'lr' in plot_axes and len(llr) > 0:
-        rows.append(['lr', 'lr'])
     if 'nefe' in plot_axes and 'nefe_comp' in plot_axes and len(NEFE_PLAN) > 0:
         rows.append(['nefe', 'nefe_comp'])
     elif 'nefe' in plot_axes and len(NEFE_PLAN) > 0:
@@ -373,13 +371,6 @@ def plot_results(dt, xx, oo, bb, aa, aa_applied, lll, llr, NEFE_PLAN=[], PRAGMAT
     if 'loss' in plot_axes:
         for i, l in enumerate(lll):
             ax['loss'].plot(l, color='purple', alpha=0.1)
-
-    ## Learning rate
-    if 'lr' in plot_axes:
-        ax['lr'].plot(t[1:], llr, label='learning rate')
-        ax['lr'].set_xlabel('Time [s]')
-        ax['lr'].set_ylabel('Learning Rate')
-        ax['lr'].legend()
 
     if 'nefe' in plot_axes:
         if len(NEFE_PLAN) > 0:

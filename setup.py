@@ -11,7 +11,7 @@ setup(
    license='LICENSE',
    python_requires='>=3.11',
    install_requires=[
-       "numpy", "matplotlib", "pyyaml", "optax", "tqdm", "difai @ git+https://github.com/mkl4r/difai-base.git@main"
+       "numpy", "matplotlib", "pyyaml", "optax", "tqdm", "ipykernel", "pandas", "seaborn", "scikit-learn", "difai @ git+https://github.com/mkl4r/difai-base.git@v1.0"
    ],
    extras_require={
     "gpu": ["jax[cuda13]"],

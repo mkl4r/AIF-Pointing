@@ -6,5 +6,5 @@ _local*
 **/__pycache__/
 iwai
 test_env
-data/plots/*
-data/sim_data/*
+aif-pointing/data/plots/*
+aif-pointing/data/sim_data/*

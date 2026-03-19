@@ -293,19 +293,14 @@ def main():
             observation_buffer = jnp.zeros((reaction_time_steps, agent.params['dim_observation']))
             mouse_cursor.reset()
             
-            bb_a = [belief_state]
-            bb_o = [belief_state]
             bb_sys = [agent.belief_sys]
             bb = [belief_state]
             bb_after_rt = []
             lll = []
-            lll_sys = []
-            LR = []
             xx = [mouse_cursor.x]
             oo = []
             aa = []
             aa_applied = []
-            BBS = []
             NEFE_PLAN = []
             PRAGMATIC_PLAN = []
             INFO_GAIN_PLAN = []
@@ -356,9 +351,8 @@ def main():
                 if i >= (reaction_time_steps-1):
                     o = observation_buffer[0]
                     key, use_key = random.split(key)
-                    belief_state, ll, lr = agent.update_belief_state_obs(belief_state, agent.belief_noise, agent.belief_sys, o, key=use_key)
+                    belief_state, ll, _ = agent.update_belief_state_obs(belief_state, agent.belief_noise, agent.belief_sys, o, key=use_key)
                     lll.append(ll)
-                    LR.append(lr)
       
                 bb.append(belief_state)
                 bb_sys.append(agent.belief_sys)
@@ -381,12 +375,11 @@ def main():
             with open(save_path, 'wb') as f:
                 pickle.dump({
                     'xx': xx, 'oo': oo, 'bb': bb, 'bb_after_rt': bb_after_rt,
-                    'aa': aa, 'aa_applied': aa_applied, 'lll': lll, 'llr': LR,
+                    'aa': aa, 'aa_applied': aa_applied, 'lll': lll, 
                     'nefess': NEFES, 'pragmatics': PRAGMATICS, 'info_gains': INFO_GAINS,
                     'nefe_plan': NEFE_PLAN, 'pragmatic_plan': PRAGMATIC_PLAN,
                     'info_gain_plan': INFO_GAIN_PLAN, 'bb_sys': bb_sys,
-                    'belief_noise': agent.belief_noise, 'C_index': agent.params['C_index'],
-                    'C': agent.C, 'params': agent.params, 'sys_params_real': sys_params,
+                    'belief_noise': agent.belief_noise, 'params': agent.params, 'sys_params_real': sys_params,
                     'noise_params_real': noise_params, 'noise_params_model': noise_params,
                     'buttons': buttons, 'dt': DT
                 }, f)
@@ -394,151 +387,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-for target_id in target_selection:
-
-    # Create Generative Process (real system)
-    mouse_cursor, sys_params, x0, noise_params, _, buttons = create_mouse_env(targets, start_target, target_id)
-
-    # Create Simulation
-    sim = AIF_Simulation(agent, mouse_cursor, noise_params)
-
-    for repeat in range(MAX_COUNTS_PER_TARGET):
-        print(f"Running target {target_id} (repeat {repeat+1}/{MAX_COUNTS_PER_TARGET}).")
-        # check if file already exists
-        save_path = f"./data/sim_data/{datetime.today().strftime('%Y%m%d')}/target_{target_id}_rep_{repeat}.pickle"
-        if os.path.exists(save_path):
-            print(f"File {save_path} already exists. Skipping...")
-            continue
-
-        # Set agents belief of the target to be very uncertain and centred around the start
-        agent.belief_sys = [jnp.hstack([sys_params[:3], start_target[0], 0.03]), jnp.diag(jnp.hstack([jnp.diag(initial_belief_sys_cov)[:3], jnp.array([0.9, 0.02])]))]
-
-        belief_state = agent.belief_state
-
-        action_buffer = jnp.zeros((reaction_time_steps, agent.params['dim_action']))
-        observation_buffer = jnp.zeros((reaction_time_steps, agent.params['dim_observation']))
-
-        mouse_cursor.reset()
-        
-        # Logging
-        bb_a = [belief_state]
-        bb_o = [belief_state]
-        bb_sys = [agent.belief_sys]
-        bb = [belief_state]
-        bb_after_rt = []
-        lll = []
-        lll_sys = []
-        LR = []
-        xx = [mouse_cursor.x]
-        oo = []
-        aa = []
-        aa_applied = []
-        BBS = []
-        NEFE_PLAN = []
-        PRAGMATIC_PLAN = []
-        INFO_GAIN_PLAN = []
-        NEFES = []
-        PRAGMATICS = []
-        INFO_GAINS = []
-        for i in tqdm(range(MAX_STEPS)):
-            
-            if reaction_time > 0 and i >= reaction_time_steps:
-                # If we are past the reaction time, let the agent know about the target
-                agent.belief_sys = [sys_params, initial_belief_sys_cov]
-                
-            # Predict the state after reaction time
-            belief_state_after_rt = belief_state
-            for j in range(reaction_time_steps):
-                a = action_buffer[j]
-                key, use_key = random.split(key)
-                belief_state_after_rt, BS = agent.update_belief_state(belief_state_after_rt, agent.belief_noise, agent.belief_sys, a, key=use_key)
-
-            bb_after_rt.append(belief_state_after_rt)
-
-            # Select action as usual
-            key, use_key = random.split(key)
-            sel_plan, nefe_plan, pragmatic_plan, info_gain_plan, plans, nefes, pragmatics, info_gains = agent.select_action(belief_state_after_rt, agent.belief_noise, agent.belief_sys, key=use_key)
-            a_new = sel_plan[0]
-
-            # Make system step
-            key, use_key = random.split(key)
-            o, x, a_applied = sim.step(a_new, debug=True, key=use_key)
-
-            # Fill observation buffer with the observation
-            observation_buffer = jnp.roll(observation_buffer, -1, axis=0)
-            observation_buffer = observation_buffer.at[-1].set(o)
-
-            NEFE_PLAN.append(nefe_plan)
-            PRAGMATIC_PLAN.append(pragmatic_plan)
-            INFO_GAIN_PLAN.append(info_gain_plan)
-            NEFES.append(nefes)
-            PRAGMATICS.append(pragmatics)
-            INFO_GAINS.append(info_gains)
-            xx.append(x)
-            aa.append(a)
-            aa_applied.append(a_applied)
-            oo.append(o)
-
-            a = action_buffer[0]
-            key, use_key = random.split(key)
-            belief_state, BS = agent.update_belief_state(belief_state, agent.belief_noise, agent.belief_sys, a, key=use_key)
-
-            action_buffer = jnp.roll(action_buffer, -1, axis=0)
-            action_buffer = action_buffer.at[-1].set(a_new)
-
-            if i >= (reaction_time_steps-1):
-                o = observation_buffer[0]
-                key, use_key = random.split(key)
-                belief_state, ll, lr = agent.update_belief_state_obs(belief_state, agent.belief_noise, agent.belief_sys, o, key=use_key)
-                lll.append(ll)
-                LR.append(lr)
-  
-            bb.append(belief_state)
-            bb_sys.append(agent.belief_sys)
-            
-
-            if jnp.isnan(belief_state[0]).any() or np.isnan(belief_state[1]).any():
-                print("NAN in belief. Breaking...")
-                break
-
-            if observation_buffer[-1][2] > 0.9:
-                print("Button clicked. Breaking...")
-                break
-
-        else:
-            print("Max steps reached! Switching condition.")
-
-        create_dir = os.path.dirname(save_path)
-        if not os.path.exists(create_dir):
-            os.makedirs(create_dir)
-            print(f"Directory {create_dir} created.")
-            
-        with open(save_path, 'wb') as f:
-            pickle.dump({
-                'xx': xx,
-                'oo': oo,
-                'bb': bb,
-                'bb_after_rt': bb_after_rt,
-                'aa': aa,
-                'aa_applied': aa_applied,
-                'lll': lll,
-                'llr': LR,
-                'nefess': NEFES,
-                'pragmatics': PRAGMATICS,
-                'info_gains': INFO_GAINS,
-                'nefe_plan': NEFE_PLAN,
-                'pragmatic_plan': PRAGMATIC_PLAN,
-                'info_gain_plan': INFO_GAIN_PLAN,
-                'bb_sys': bb_sys,
-                'belief_noise': agent.belief_noise,
-                'C_index': agent.params['C_index'],
-                'C': agent.C,
-                'params': agent.params,
-                'sys_params_real': sys_params,
-                'noise_params_real': noise_params,
-                'noise_params_model': noise_params,
-                'buttons': buttons,
-                'dt': dt
-            }, f)
 
